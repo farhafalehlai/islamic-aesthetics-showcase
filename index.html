@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Islamic Aesthetics & Innovation Virtual Expo 2026</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js 3D Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Firebase SDK (Live Database) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- FontAwesome & Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: { 400: '#34d399', 500: '#10b981', 600: '#059669', 900: '#064e3b', 950: '#022c22' },
+                        gold: { 300: '#fde047', 400: '#facc15', 500: '#eab308', 600: '#ca8a04' },
+                        slate: { 850: '#111827', 900: '#0f172a', 950: '#020617' }
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #f8fafc; overflow-x: hidden; }
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
+        
+        .input-uppercase { text-transform: uppercase; }
+        .input-uppercase::placeholder { text-transform: none; }
+
+        .text-3d-gold {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(135deg, #fffbeb 0%, #fde047 30%, #eab308 70%, #854d0e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 4px 12px rgba(234, 179, 8, 0.35), 0px 1px 2px rgba(0, 0, 0, 0.8);
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.9));
+        }
+
+        .text-3d-emerald {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(135deg, #a7f3d0 0%, #34d399 40%, #059669 80%, #022c22 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px);
+            border: 1px solid rgba(16, 185, 129, 0.2); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(234, 179, 8, 0.6); transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 20px 40px -15px rgba(16, 185, 129, 0.3), 0 0 20px 2px rgba(234, 179, 8, 0.2);
+        }
+
+        .arch-frame { clip-path: polygon(0% 15%, 15% 0%, 85% 0%, 100% 15%, 100% 100%, 0% 100%); }
+        .text-justify-custom { text-align: justify; text-justify: inter-word; }
+    </style>
+</head>
+<body class="selection:bg-emerald-500 selection:text-slate-950">
+
+    <div id="canvas-container"></div>
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-emerald-500/20 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-gold-400 p-[2px] shadow-lg shadow-emerald-500/20">
+                    <div class="w-full h-full bg-slate-950 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-kaaba text-gold-400 text-lg"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-3d-gold text-lg md:text-xl font-bold tracking-wider">CREATIVITY & AESTHETICS IN ISLAM</h1>
+                    <p class="text-[10px] text-emerald-400 tracking-widest uppercase font-semibold">National Student Virtual Exhibition 2026</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button id="submitBtn" onclick="toggleSubmissionModal()" class="px-5 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-slate-950 font-bold text-xs tracking-wider uppercase transition-all shadow-lg shadow-emerald-500/30">
+                    <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Submit Artwork
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Hero Banner -->
+    <section class="relative max-w-7xl mx-auto px-6 pt-12 pb-8 text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-6 shadow-inner">
+            <i class="fa-solid fa-trophy text-gold-400 animate-pulse"></i>
+            <span id="headerStatus">LIVE VIRTUAL EXHIBITION</span>
+        </div>
+
+        <h2 class="text-3d-emerald text-3xl md:text-5xl lg:text-6xl font-black mb-4 tracking-tight">
+            EXCELLENCE IN ISLAMIC INNOVATION
+        </h2>
+        
+        <p class="max-w-3xl mx-auto text-slate-300 text-sm md:text-base leading-relaxed text-justify-custom mb-10 px-4">
+            Welcome to the culmination showcase for <span class="text-gold-400 font-semibold">Creativity and Aesthetics in Islam</span>. Discover cutting-edge digital posters and architectural renders. Submissions auto-publish instantly, and voting opens automatically during the official timeframe.
+        </p>
+
+        <!-- Dynamic Timeline -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto text-left">
+            <div id="phase1Card" class="glass-card p-5 rounded-xl border-l-4 relative overflow-hidden transition-all duration-500">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Phase 1: Submission</span>
+                    <span id="phase1Badge" class="px-2 py-0.5 rounded text-[10px] font-semibold">Status</span>
+                </div>
+                <h3 class="font-bold text-sm mb-1 text-slate-100">Paperwork & Submission</h3>
+                <p class="text-xs text-slate-300 font-medium mb-2">Wednesday, 18 Nov (Week 8)</p>
+                <p class="text-[11px] text-slate-400 text-justify-custom">Final artwork upload deadline. Projects automatically render on the public gallery floor upon submission.</p>
+            </div>
+
+            <div id="phase2Card" class="glass-card p-5 rounded-xl border-l-4 relative overflow-hidden transition-all duration-500">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Phase 2: Voting Window</span>
+                    <span id="phase2Badge" class="px-2 py-0.5 rounded text-[10px] font-semibold">Status</span>
+                </div>
+                <h3 class="font-bold text-sm mb-1 text-slate-100">10-Day Public Voting</h3>
+                <p class="text-xs text-slate-300 font-medium mb-2">24 Nov – 2 Dec (10 Days)</p>
+                <p class="text-[11px] text-slate-400 text-justify-custom">Public voting portal automatically opens. Visitors cast live votes and leave constructive critiques.</p>
+            </div>
+
+            <div id="phase3Card" class="glass-card p-5 rounded-xl border-l-4 relative overflow-hidden transition-all duration-500">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Phase 3: Winner Reveal</span>
+                    <span id="phase3Badge" class="px-2 py-0.5 rounded text-[10px] font-semibold">Status</span>
+                </div>
+                <h3 class="font-bold text-sm mb-1 text-slate-100">Grand Leaderboard</h3>
+                <p class="text-xs text-slate-300 font-medium mb-2">Thursday, 3 Dec (Week 11)</p>
+                <p class="text-[11px] text-slate-400 text-justify-custom">Automated winner reveal. System locks voting and displays Gold, Silver, and Bronze awards based on total votes.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Leaderboard Banner (Appears Automatically in Phase 3) -->
+    <div id="winnerLeaderboard" class="hidden max-w-7xl mx-auto px-6 mb-10">
+        <div class="glass-card p-8 rounded-2xl border-2 border-gold-500/50 bg-gradient-to-r from-slate-950 via-emerald-950/40 to-slate-950">
+            <div class="text-center mb-6">
+                <span class="px-3 py-1 rounded-full bg-gold-500/20 text-gold-400 border border-gold-500/40 text-xs font-bold uppercase tracking-widest">Official Competition Results</span>
+                <h3 class="text-3xl font-black text-3d-gold mt-2">PEOPLE'S CHOICE WINNERS</h3>
+            </div>
+            <div id="topWinnersContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        </div>
+    </div>
+
+    <!-- Live Gallery Section -->
+    <main class="max-w-7xl mx-auto px-6 py-10">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b border-slate-800 pb-4">
+            <div>
+                <h3 class="text-2xl font-bold text-3d-gold tracking-wide">EXHIBITION GALLERY</h3>
+                <p class="text-xs text-emerald-400">Live student projects automatically published in real-time</p>
+            </div>
+        </div>
+
+        <!-- Dynamic Artwork Grid -->
+        <div id="artworkGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="col-span-full text-center py-12 text-slate-500">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-emerald-400 mb-2"></i>
+                <p class="text-xs">Loading live exhibition data...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Submission Modal -->
+    <div id="submissionModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-2xl rounded-2xl p-6 md:p-8 relative max-h-[90vh] overflow-y-auto border border-emerald-500/30">
+            <button onclick="toggleSubmissionModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-xl font-bold text-3d-gold mb-1 uppercase">SUBMIT YOUR EXHIBIT</h3>
+            <p class="text-xs text-slate-400 mb-6">Submitted artwork will be automatically published directly to the virtual gallery floor.</p>
+
+            <form onsubmit="handleLiveSubmission(event)" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-emerald-400 uppercase mb-1">Group Name</label>
+                        <input type="text" id="subGroup" required oninput="this.value = this.value.toUpperCase()" placeholder="E.G. AL-KINDI INNOVATORS" class="input-uppercase w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-100 text-xs outline-none focus:border-gold-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-emerald-400 uppercase mb-1">Class Section</label>
+                        <input type="text" id="subClass" required oninput="this.value = this.value.toUpperCase()" placeholder="E.G. SECTION A1" class="input-uppercase w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-100 text-xs outline-none focus:border-gold-400">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-emerald-400 uppercase mb-1">Artwork / Project Title</label>
+                    <input type="text" id="subTitle" required oninput="this.value = this.value.toUpperCase()" placeholder="E.G. THE GEOMETRIC LIGHT PAVILION" class="input-uppercase w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-100 text-xs outline-none focus:border-gold-400">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-emerald-400 uppercase mb-1">Project Synopsis</label>
+                    <textarea id="subSynopsis" rows="3" required placeholder="Describe your concept and Islamic aesthetic design process..." class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-100 text-xs outline-none text-justify-custom focus:border-gold-400"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-emerald-400 uppercase mb-1">Poster Image URL (Google Drive / Canva / Imgur)</label>
+                    <input type="url" id="subImageUrl" required placeholder="https://i.imgur.com/your-image.jpg" class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-100 text-xs outline-none focus:border-gold-400">
+                    <p class="text-[10px] text-slate-500 mt-1">Paste a direct image link or shared Google Drive image URL.</p>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3 border-t border-slate-800">
+                    <button type="button" onclick="toggleSubmissionModal()" class="px-4 py-2 rounded-lg bg-slate-900 text-slate-400 text-xs font-bold">Cancel</button>
+                    <button type="submit" id="submitFormBtn" class="px-6 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20">Auto-Publish Artwork</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lightbox Detail Modal -->
+    <div id="detailModal" class="fixed inset-0 z-50 hidden bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-4xl rounded-2xl p-6 relative max-h-[90vh] overflow-y-auto border border-gold-500/30">
+            <button onclick="closeDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg z-10">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <div class="arch-frame rounded-xl overflow-hidden bg-slate-950 border border-emerald-500/20 mb-4">
+                        <img id="modalImg" src="" class="w-full h-80 object-cover">
+                    </div>
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-gold-400 font-bold"><i class="fa-solid fa-heart mr-1"></i> <span id="modalVoteCount">0</span> Public Votes</span>
+                        <button id="modalVoteBtn" onclick="castLiveVote()" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold uppercase transition-all">Cast Vote</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col justify-between">
+                    <div>
+                        <h3 id="modalTitle" class="text-xl font-bold text-3d-gold uppercase mb-1"></h3>
+                        <p id="modalGroup" class="text-xs text-emerald-400 font-bold tracking-wider uppercase mb-4"></p>
+                        <p id="modalSynopsis" class="text-xs text-slate-300 text-justify-custom leading-relaxed mb-6"></p>
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-4">
+                        <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider mb-1">Public Critique</h4>
+                        <p class="text-[9px] text-emerald-500 mb-3 italic">Comments are anonymous and live. Provide constructive feedback.</p>
+                        
+                        <div id="modalCommentList" class="space-y-3 mb-4 max-h-40 overflow-y-auto pr-2"></div>
+
+                        <form onsubmit="postLiveComment(event)" class="flex gap-2">
+                            <input type="text" id="newCommentInput" required placeholder="Leave constructive critique..." class="flex-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-200 text-xs outline-none focus:border-gold-400">
+                            <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs uppercase">Post</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Logic Script -->
+    <script>
+        // ==========================================
+        // 1. TAMPAL URL FIREBASE ANDA DI SINI
+        // ==========================================
+        const firebaseConfig = {
+            databaseURL: "PASTE_URL_FIREBASE_ANDA_DI_SINI"
+        };
+        
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+        const projectsRef = db.ref("projects");
+
+        // State & Variables
+        let currentPhase = 1;
+        let activeProjectId = null;
+        let allProjects = {};
+
+        // ==========================================
+        // 2. AUTOMATED PHASE CONTROLLER
+        // ==========================================
+        function initPhaseLogic() {
+            const currentDate = new Date();
+            const phase2Start = new Date('2026-11-24T00:00:00'); 
+            const phase3Start = new Date('2026-12-03T00:00:00'); 
+            
+            if (currentDate >= phase3Start) currentPhase = 3;
+            else if (currentDate >= phase2Start) currentPhase = 2;
+            else currentPhase = 1;
+
+            const submitBtn = document.getElementById('submitBtn');
+            const headerStatus = document.getElementById('headerStatus');
+
+            if (currentPhase === 1) {
+                headerStatus.innerText = "PHASE 1: SUBMISSIONS OPEN";
+                if(submitBtn) submitBtn.style.display = "block";
+            } else if (currentPhase === 2) {
+                headerStatus.innerText = "PHASE 2: PUBLIC VOTING LIVE";
+                if(submitBtn) submitBtn.style.display = "none";
+            } else {
+                headerStatus.innerText = "PHASE 3: WINNERS ANNOUNCED";
+                if(submitBtn) submitBtn.style.display = "none";
+                document.getElementById('winnerLeaderboard').classList.remove('hidden');
+            }
+        }
+
+        // ==========================================
+        // 3. AUTO-PUBLISH SUBMISSION SYSTEM
+        // ==========================================
+        function handleLiveSubmission(e) {
+            e.preventDefault();
+            if(currentPhase !== 1) {
+                alert("Submissions are closed!");
+                return;
+            }
+
+            const btn = document.getElementById('submitFormBtn');
+            btn.innerText = "Publishing...";
+            btn.disabled = true;
+
+            const newProject = {
+                group: document.getElementById('subGroup').value.toUpperCase(),
+                section: document.getElementById('subClass').value.toUpperCase(),
+                title: document.getElementById('subTitle').value.toUpperCase(),
+                synopsis: document.getElementById('subSynopsis').value,
+                imageUrl: document.getElementById('subImageUrl').value,
+                votes: 0,
+                comments: {},
+                timestamp: Date.now()
+            };
+
+            projectsRef.push(newProject, (error) => {
+                btn.innerText = "Auto-Publish Artwork";
+                btn.disabled = false;
+                if(error) {
+                    alert("Submission failed. Check internet connection.");
+                } else {
+                    alert("Artwork successfully published to the live gallery!");
+                    toggleSubmissionModal();
+                    e.target.reset();
+                }
+            });
+        }
+
+        // ==========================================
+        // 4. REAL-TIME GALLERY LISTENER & RENDERER
+        // ==========================================
+        projectsRef.on('value', (snapshot) => {
+            allProjects = snapshot.val() || {};
+            renderGallery(allProjects);
+            if(currentPhase === 3) renderLeaderboard(allProjects);
+        });
+
+        function renderGallery(projects) {
+            const grid = document.getElementById('artworkGrid');
+            grid.innerHTML = "";
+
+            const keys = Object.keys(projects);
+            if(keys.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-500"><p>No exhibition entries published yet.</p></div>`;
+                return;
+            }
+
+            keys.forEach(id => {
+                const item = projects[id];
+                const commentCount = item.comments ? Object.keys(item.comments).length : 0;
+                
+                const cardHTML = `
+                    <div class="glass-card rounded-2xl overflow-hidden group">
+                        <div class="relative arch-frame h-64 overflow-hidden bg-slate-950 cursor-pointer" onclick="openDetailModal('${id}')">
+                            <img src="${item.imageUrl}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100" onerror="this.src='https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?w=800'">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                        </div>
+                        <div class="p-6">
+                            <h4 class="text-lg font-bold text-slate-100 mb-1 group-hover:text-gold-400 transition-colors uppercase">${item.title}</h4>
+                            <p class="text-xs text-emerald-400 font-semibold uppercase mb-3 tracking-wider">${item.group} • ${item.section}</p>
+                            <p class="text-xs text-slate-300 text-justify-custom leading-relaxed mb-4 line-clamp-3">${item.synopsis}</p>
+                            <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                                <button onclick="openDetailModal('${id}')" class="text-xs text-gold-400 hover:underline font-semibold">
+                                    <i class="fa-regular fa-comments"></i> ${commentCount} Critiques
+                                </button>
+                                ${currentPhase === 2 ? `
+                                    <button onclick="castLiveVoteDirect('${id}')" class="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-md">
+                                        <i class="fa-solid fa-heart mr-1"></i> Vote (${item.votes || 0})
+                                    </button>
+                                ` : `
+                                    <span class="text-xs text-slate-400 font-bold">${item.votes || 0} Votes</span>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+
+        // ==========================================
+        // 5. LIVE VOTING & COMMENTARY SYSTEM
+        // ==========================================
+        function castLiveVoteDirect(id) {
+            if(currentPhase !== 2) return;
+            const currentVotes = (allProjects[id] && allProjects[id].votes) ? allProjects[id].votes : 0;
+            projectsRef.child(id).update({ votes: currentVotes + 1 });
+        }
+
+        function castLiveVote() {
+            if(activeProjectId) castLiveVoteDirect(activeProjectId);
+        }
+
+        function postLiveComment(e) {
+            e.preventDefault();
+            if(!activeProjectId) return;
+            const input = document.getElementById('newCommentInput');
+            const text = input.value.trim();
+            if(!text) return;
+
+            db.ref(`projects/${activeProjectId}/comments`).push({
+                text: text,
+                timestamp: Date.now()
+            });
+
+            input.value = '';
+        }
+
+        function openDetailModal(id) {
+            activeProjectId = id;
+            const item = allProjects[id];
+            if(!item) return;
+
+            document.getElementById('modalTitle').innerText = item.title;
+            document.getElementById('modalGroup').innerText = `${item.group} • ${item.section}`;
+            document.getElementById('modalSynopsis').innerText = item.synopsis;
+            document.getElementById('modalImg').src = item.imageUrl;
+            document.getElementById('modalVoteCount').innerText = item.votes || 0;
+            
+            const voteBtn = document.getElementById('modalVoteBtn');
+            if(currentPhase === 2) voteBtn.style.display = "block";
+            else voteBtn.style.display = "none";
+
+            // Render Comments
+            const list = document.getElementById('modalCommentList');
+            list.innerHTML = "";
+            if(item.comments) {
+                Object.values(item.comments).reverse().forEach(c => {
+                    list.innerHTML += `
+                        <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+                            <span class="text-[10px] font-bold text-emerald-400 block mb-1">Anonymous Visitor</span>
+                            <p class="text-[11px] text-slate-300 text-justify-custom">${c.text}</p>
+                        </div>
+                    `;
+                });
+            } else {
+                list.innerHTML = `<p class="text-[11px] text-slate-500 italic">No critiques posted yet.</p>`;
+            }
+
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            activeProjectId = null;
+        }
+
+        function toggleSubmissionModal() {
+            document.getElementById('submissionModal').classList.toggle('hidden');
+        }
+
+        // ==========================================
+        // 6. AUTO WINNER LEADERBOARD (PHASE 3)
+        // ==========================================
+        function renderLeaderboard(projects) {
+            const container = document.getElementById('topWinnersContainer');
+            container.innerHTML = "";
+            
+            const sorted = Object.values(projects).sort((a,b) => (b.votes || 0) - (a.votes || 0)).slice(0,3);
+            const badges = ["🥇 GRAND CHAMPION", "🥈 1ST RUNNER UP", "🥉 2ND RUNNER UP"];
+
+            sorted.forEach((item, index) => {
+                container.innerHTML += `
+                    <div class="glass-card p-6 rounded-xl border border-gold-500/30 text-center">
+                        <span class="text-xs font-black text-gold-400 tracking-wider">${badges[index]}</span>
+                        <h4 class="text-lg font-bold text-slate-100 uppercase mt-2 mb-1">${item.title}</h4>
+                        <p class="text-xs text-emerald-400 font-bold uppercase mb-3">${item.group}</p>
+                        <span class="px-4 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold">${item.votes || 0} Votes</span>
+                    </div>
+                `;
+            });
+        }
+
+        // Initialize 3D Canvas
+        window.onload = function() {
+            initPhaseLogic();
+            
+            // Three.js Background
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            const particlesGeometry = new THREE.BufferGeometry();
+            const count = 700;
+            const positions = new Float32Array(count * 3);
+            for(let i = 0; i < count * 3; i++) positions[i] = (Math.random() - 0.5) * 20;
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const particlesMaterial = new THREE.PointsMaterial({ size: 0.03, color: 0xeab308, transparent: true, opacity: 0.5 });
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+            camera.position.z = 5;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                particlesMesh.rotation.y += 0.0005;
+                particlesMesh.rotation.x += 0.0002;
+                renderer.render(scene, camera);
+            }
+            animate();
+        };
+    </script>
+</body>
+</html>
