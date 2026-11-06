@@ -113,7 +113,7 @@
         </h2>
         
         <p class="max-w-3xl mx-auto text-slate-300 text-sm md:text-base leading-relaxed text-justify-custom mb-10 px-4">
-            Welcome to the culmination showcase for <span class="text-gold-400 font-semibold">Creativity and Aesthetics in Islam</span>. Discover cutting-edge digital posters and architectural renders. Submissions auto-publish instantly, and voting opens automatically during the official timeframe.
+            Welcome to the culmination showcase for <span class="text-gold-400 font-semibold">Creativity and Aesthetics in Islam</span>. Discover cutting-edge digital posters, videos, and architectural renders. Submissions auto-publish instantly, and voting opens automatically during the official timeframe.
         </p>
 
         <!-- Dynamic Timeline -->
@@ -186,7 +186,7 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <h3 class="text-xl font-bold text-3d-gold mb-1 uppercase">SUBMIT YOUR EXHIBIT</h3>
-            <p class="text-xs text-slate-400 mb-6">Submitted artwork will be automatically published directly to the virtual gallery floor.</p>
+            <p class="text-xs text-slate-400 mb-6">Submitted artwork/video will be automatically published directly to the virtual gallery floor.</p>
 
             <form onsubmit="handleLiveSubmission(event)" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -211,9 +211,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-emerald-400 uppercase mb-1">Poster Image URL (Google Drive / Canva / Imgur)</label>
-                    <input type="url" id="subImageUrl" required placeholder="https://lh3.googleusercontent.com/d/... or Google Drive link" class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-100 text-xs outline-none focus:border-gold-400">
-                    <p class="text-[10px] text-slate-500 mt-1">Paste a direct image link or shared Google Drive link (system will auto-convert Drive links).</p>
+                    <label class="block text-xs font-bold text-emerald-400 uppercase mb-1">Media Link: Poster Image or Video URL (YouTube / Drive / Imgur)</label>
+                    <input type="url" id="subImageUrl" required placeholder="Paste Google Drive image link, Imgur, or YouTube video link" class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-100 text-xs outline-none focus:border-gold-400">
+                    <p class="text-[10px] text-slate-500 mt-1">Accepts images (Drive/Imgur) or Videos (YouTube/MP4). Drive image links auto-convert.</p>
                 </div>
 
                 <div class="pt-4 flex justify-end gap-3 border-t border-slate-800">
@@ -233,12 +233,9 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
-                    <!-- MODAL IMAGE CONTAINER (FULL CONTAIN & CLICK TO ZOOM) -->
-                    <div class="arch-frame rounded-xl overflow-hidden bg-slate-950 border border-emerald-500/20 mb-4 p-2 flex items-center justify-center relative group">
-                        <img id="modalImg" src="" onclick="window.open(this.src, '_blank')" class="w-full h-80 object-contain cursor-pointer transition-transform duration-300 group-hover:scale-105" title="Click to view full image in new tab">
-                        <span class="absolute bottom-2 right-2 bg-slate-950/80 text-[10px] text-slate-400 px-2 py-0.5 rounded pointer-events-none">
-                            🔍 Click to zoom
-                        </span>
+                    <!-- MEDIA CONTAINER (AUTO SWITCH IMAGE / VIDEO) -->
+                    <div id="modalMediaBox" class="arch-frame rounded-xl overflow-hidden bg-slate-950 border border-emerald-500/20 mb-4 p-2 flex items-center justify-center relative min-h-[220px]">
+                        <!-- Dynamic Media inserted here -->
                     </div>
                     <div class="flex justify-between items-center text-xs">
                         <span class="text-gold-400 font-bold"><i class="fa-solid fa-heart mr-1"></i> <span id="modalVoteCount">0</span> Public Votes</span>
@@ -278,17 +275,48 @@
             databaseURL: "https://islamic-aesthetics-showcase-default-rtdb.firebaseio.com/"
         };
         
-        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.database();
         const projectsRef = db.ref("projects");
 
-        // State & Variables
         let currentPhase = 1;
         let activeProjectId = null;
         let allProjects = {};
+
+        // Helper: Extract YouTube Embed URL
+        function getYouTubeEmbedUrl(url) {
+            let videoId = "";
+            if (url.includes("youtu.be/")) {
+                videoId = url.split("youtu.be/")[1].split("?")[0];
+            } else if (url.includes("youtube.com/watch")) {
+                const urlParams = new URLSearchParams(url.split("?")[1]);
+                videoId = urlParams.get("v");
+            }
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+        }
+
+        // Helper: Render Smart Media (Video vs Image)
+        function renderMediaHTML(url, title, isModal = false) {
+            const ytEmbed = getYouTubeEmbedUrl(url);
+            const isMP4 = url.toLowerCase().endsWith(".mp4") || url.toLowerCase().endsWith(".webm");
+
+            if (ytEmbed) {
+                return `<iframe src="${ytEmbed}" class="w-full h-full min-h-[220px] rounded-lg border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            } else if (isMP4) {
+                return `<video src="${url}" controls class="max-h-full max-w-full rounded-lg"></video>`;
+            } else {
+                if (isModal) {
+                    return `
+                        <img src="${url}" onclick="window.open(this.src, '_blank')" class="w-full h-80 object-contain cursor-pointer transition-transform duration-300 hover:scale-105" title="Click to view full image in new tab">
+                        <span class="absolute bottom-2 right-2 bg-slate-950/80 text-[10px] text-slate-400 px-2 py-0.5 rounded pointer-events-none">🔍 Click to zoom</span>
+                    `;
+                } else {
+                    return `<img src="${url}" class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100" onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Image+Not+Found';">`;
+                }
+            }
+        }
 
         // ==========================================
         // 2. AUTOMATED PHASE CONTROLLER
@@ -333,7 +361,6 @@
             btn.disabled = true;
 
             let rawUrl = document.getElementById('subImageUrl').value.trim();
-            // AUTO CONVERT GOOGLE DRIVE SHARED LINKS
             if(rawUrl.includes("drive.google.com/file/d/")) {
                 const parts = rawUrl.split('/d/');
                 if(parts.length > 1) {
@@ -359,7 +386,7 @@
                 if(error) {
                     alert("Submission failed. Check internet connection.");
                 } else {
-                    alert("Artwork successfully published to the live gallery!");
+                    alert("Artwork/Video successfully published to the live gallery!");
                     toggleSubmissionModal();
                     e.target.reset();
                 }
@@ -388,13 +415,13 @@
             keys.forEach(id => {
                 const item = projects[id];
                 const commentCount = item.comments ? Object.keys(item.comments).length : 0;
+                const mediaHTML = renderMediaHTML(item.imageUrl, item.title, false);
                 
                 const cardHTML = `
                     <div class="glass-card rounded-2xl overflow-hidden group flex flex-col justify-between">
                         <div>
-                            <!-- GALLERY CARD IMAGE (CONTAINED & NO CROPPING) -->
                             <div class="relative arch-frame h-64 overflow-hidden bg-slate-950 cursor-pointer p-2 flex items-center justify-center" onclick="openDetailModal('${id}')">
-                                <img src="${item.imageUrl}" class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100" onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300?text=Image+Not+Found';">
+                                ${mediaHTML}
                                 <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none"></div>
                             </div>
                             <div class="p-6">
@@ -459,7 +486,11 @@
             document.getElementById('modalTitle').innerText = item.title;
             document.getElementById('modalGroup').innerText = `${item.group} • ${item.section}`;
             document.getElementById('modalSynopsis').innerText = item.synopsis;
-            document.getElementById('modalImg').src = item.imageUrl;
+            
+            // Render Dynamic Media in Popup
+            const modalMediaBox = document.getElementById('modalMediaBox');
+            modalMediaBox.innerHTML = renderMediaHTML(item.imageUrl, item.title, true);
+
             document.getElementById('modalVoteCount').innerText = item.votes || 0;
             
             const voteBtn = document.getElementById('modalVoteBtn');
@@ -487,6 +518,7 @@
 
         function closeDetailModal() {
             document.getElementById('detailModal').classList.add('hidden');
+            document.getElementById('modalMediaBox').innerHTML = '';
             activeProjectId = null;
         }
 
@@ -520,7 +552,6 @@
         window.onload = function() {
             initPhaseLogic();
             
-            // Three.js Background
             const container = document.getElementById('canvas-container');
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
