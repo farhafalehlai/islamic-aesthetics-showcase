@@ -121,27 +121,27 @@
             <div id="phase1Card" class="glass-card p-5 rounded-xl border-l-4 relative overflow-hidden transition-all duration-500">
                 <div class="flex justify-between items-start mb-2">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Phase 1: Submission</span>
-                    <span id="phase1Badge" class="px-2 py-0.5 rounded text-[10px] font-semibold">Status</span>
+                    <span id="phase1Badge" class="px-2 py-0.5 rounded text-[10px] font-semibold">Extended</span>
                 </div>
-                <h3 class="font-bold text-sm mb-1 text-slate-100">Paperwork & Submission</h3>
-                <p class="text-xs text-slate-300 font-medium mb-2">Wednesday, 18 Nov (Week 8)</p>
-                <p class="text-[11px] text-slate-400 text-justify-custom">Final artwork upload deadline. Projects automatically render on the public gallery floor upon submission.</p>
+                <h3 class="font-bold text-sm mb-1 text-slate-100">Final Submission Extension</h3>
+                <p class="text-xs text-gold-400 font-medium mb-2">Tuesday, 24 Nov (11:59 PM)</p>
+                <p class="text-[11px] text-slate-400 text-justify-custom">Final extended artwork upload deadline. Projects automatically render on the public gallery floor upon submission.</p>
             </div>
 
             <div id="phase2Card" class="glass-card p-5 rounded-xl border-l-4 relative overflow-hidden transition-all duration-500">
                 <div class="flex justify-between items-start mb-2">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Phase 2: Voting Window</span>
-                    <span id="phase2Badge" class="px-2 py-0.5 rounded text-[10px] font-semibold">Status</span>
+                    <span id="phase2Badge" class="px-2 py-0.5 rounded text-[10px] font-semibold">Starts Tomorrow</span>
                 </div>
-                <h3 class="font-bold text-sm mb-1 text-slate-100">10-Day Public Voting</h3>
-                <p class="text-xs text-slate-300 font-medium mb-2">24 Nov – 2 Dec (10 Days)</p>
+                <h3 class="font-bold text-sm mb-1 text-slate-100">Public Voting Period</h3>
+                <p class="text-xs text-slate-300 font-medium mb-2">25 Nov – 2 Dec (8 Days)</p>
                 <p class="text-[11px] text-slate-400 text-justify-custom">Public voting portal automatically opens. Visitors cast live votes and leave constructive critiques.</p>
             </div>
 
             <div id="phase3Card" class="glass-card p-5 rounded-xl border-l-4 relative overflow-hidden transition-all duration-500">
                 <div class="flex justify-between items-start mb-2">
                     <span class="text-[11px] font-bold uppercase tracking-wider text-slate-300">Phase 3: Winner Reveal</span>
-                    <span id="phase3Badge" class="px-2 py-0.5 rounded text-[10px] font-semibold">Status</span>
+                    <span id="phase3Badge" class="px-2 py-0.5 rounded text-[10px] font-semibold">Upcoming</span>
                 </div>
                 <h3 class="font-bold text-sm mb-1 text-slate-100">Grand Leaderboard</h3>
                 <p class="text-xs text-slate-300 font-medium mb-2">Thursday, 3 Dec (Week 11)</p>
@@ -329,12 +329,12 @@
         }
 
         // ==========================================
-        // 2. AUTOMATED PHASE CONTROLLER
+        // 2. AUTOMATED PHASE CONTROLLER (REOPENED FOR 1 DAY)
         // ==========================================
         function initPhaseLogic() {
             const currentDate = new Date();
-            const phase2Start = new Date('2026-11-24T00:00:00'); 
-            const phase3Start = new Date('2026-12-03T00:00:00'); 
+            const phase2Start = new Date('2026-11-25T00:00:00'); // Voting starts tomorrow (25 Nov)
+            const phase3Start = new Date('2026-12-03T00:00:00'); // Winner reveal (3 Dec)
             
             if (currentDate >= phase3Start) currentPhase = 3;
             else if (currentDate >= phase2Start) currentPhase = 2;
@@ -344,7 +344,7 @@
             const headerStatus = document.getElementById('headerStatus');
 
             if (currentPhase === 1) {
-                headerStatus.innerText = "PHASE 1: SUBMISSIONS OPEN";
+                headerStatus.innerText = "PHASE 1: FINAL EXTENSION (CLOSES TONIGHT 11:59 PM)";
                 if(submitBtn) submitBtn.style.display = "block";
             } else if (currentPhase === 2) {
                 headerStatus.innerText = "PHASE 2: PUBLIC VOTING LIVE";
