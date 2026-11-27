@@ -113,7 +113,7 @@
         </h2>
         
         <p class="max-w-3xl mx-auto text-slate-300 text-sm md:text-base leading-relaxed text-justify-custom mb-10 px-4">
-            Welcome to the culmination showcase for <span class="text-gold-400 font-semibold">Creativity and Aesthetics in Islam</span>. Discover cutting-edge digital posters, videos, and architectural renders. Exhibits are displayed in randomized order for fair visibility, and each visitor may cast one official vote (+10 points) per artwork.
+            Welcome to the culmination showcase for <span class="text-gold-400 font-semibold">Creativity and Aesthetics in Islam</span>. Discover cutting-edge digital posters, videos, and architectural renders. Exhibits are displayed in randomized order for fair visibility, and each visitor may cast one official vote per artwork.
         </p>
 
         <!-- Dynamic Timeline -->
@@ -135,7 +135,7 @@
                 </div>
                 <h3 class="font-bold text-sm mb-1 text-slate-100">Public Voting Period</h3>
                 <p class="text-xs text-gold-400 font-medium mb-2">25 Nov – 2 Dec 2026</p>
-                <p class="text-[11px] text-slate-400 text-justify-custom">Public voting window. Visitors can cast 1 vote (+10 points) per artwork and leave constructive critiques.</p>
+                <p class="text-[11px] text-slate-400 text-justify-custom">Public voting window. Visitors can cast 1 official vote per artwork and leave constructive critiques.</p>
             </div>
 
             <div id="phase3Card" class="glass-card p-5 rounded-xl border-l-4 border-slate-600 relative overflow-hidden transition-all duration-500">
@@ -145,7 +145,7 @@
                 </div>
                 <h3 class="font-bold text-sm mb-1 text-slate-100">Grand Leaderboard</h3>
                 <p class="text-xs text-slate-300 font-medium mb-2">Thursday, 3 Dec 2026</p>
-                <p class="text-[11px] text-slate-400 text-justify-custom">Automated winner reveal. System locks voting and displays Gold, Silver, and Bronze awards based on total points.</p>
+                <p class="text-[11px] text-slate-400 text-justify-custom">Automated winner reveal. System locks voting and displays Gold, Silver, and Bronze awards based on total votes.</p>
             </div>
         </div>
     </section>
@@ -166,7 +166,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b border-slate-800 pb-4 gap-4">
             <div>
                 <h3 class="text-2xl font-bold text-3d-gold tracking-wide">EXHIBITION GALLERY</h3>
-                <p class="text-xs text-emerald-400">Randomized order for fair display • 1 Tap = +10 Points</p>
+                <p class="text-xs text-emerald-400">Live student projects displayed in randomized order</p>
             </div>
             <button onclick="reshuffleNow()" class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-emerald-500/30 text-emerald-400 text-xs font-semibold transition-all flex items-center gap-2">
                 <i class="fa-solid fa-shuffle"></i> Shuffle Order
@@ -255,8 +255,8 @@
                         <!-- Dynamic Media inserted here -->
                     </div>
                     <div class="flex justify-between items-center text-xs">
-                        <span class="text-gold-400 font-bold"><i class="fa-solid fa-heart mr-1"></i> <span id="modalVoteCount">0</span> Points</span>
-                        <button id="modalVoteBtn" onclick="castLiveVote()" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold uppercase transition-all">Vote (+10)</button>
+                        <span class="text-gold-400 font-bold"><i class="fa-solid fa-heart mr-1"></i> <span id="modalVoteCount">0</span> Votes</span>
+                        <button id="modalVoteBtn" onclick="castLiveVote()" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold uppercase transition-all">Vote</button>
                     </div>
                 </div>
 
@@ -301,7 +301,7 @@
         let currentPhase = 2;
         let activeProjectId = null;
         let allProjects = {};
-        let shuffledKeys = []; // Stores randomized order per session so cards don't jump when voting
+        let shuffledKeys = [];
 
         // Fisher-Yates Shuffle Algorithm
         function shuffleArray(array) {
@@ -400,7 +400,7 @@
                 phase2Badge.innerText = "Upcoming";
                 phase3Badge.innerText = "Upcoming";
             } else if (currentPhase === 2) {
-                headerStatus.innerText = "PHASE 2: PUBLIC VOTING LIVE (1 TAP = +10 PTS)";
+                headerStatus.innerText = "PHASE 2: PUBLIC VOTING LIVE";
                 if(submitBtn) submitBtn.style.display = "none";
 
                 phase1Badge.innerText = "Completed";
@@ -485,11 +485,9 @@
             allProjects = snapshot.val() || {};
             const latestKeys = Object.keys(allProjects);
 
-            // Shuffle once on initial load, keep stable during vote updates
             if (shuffledKeys.length === 0) {
                 shuffledKeys = shuffleArray([...latestKeys]);
             } else {
-                // Keep existing shuffled order, add any newly submitted keys, remove deleted keys
                 shuffledKeys = shuffledKeys.filter(k => latestKeys.includes(k));
                 latestKeys.forEach(k => {
                     if (!shuffledKeys.includes(k)) shuffledKeys.push(k);
@@ -531,12 +529,12 @@
                     } else {
                         voteControlHTML = `
                             <button onclick="castLiveVoteDirect('${id}')" class="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-md transition-all">
-                                <i class="fa-solid fa-heart mr-1"></i> Vote +10 (${item.votes || 0})
+                                <i class="fa-solid fa-heart mr-1"></i> Vote (${item.votes || 0})
                             </button>
                         `;
                     }
                 } else {
-                    voteControlHTML = `<span class="text-xs text-slate-400 font-bold">${item.votes || 0} Points</span>`;
+                    voteControlHTML = `<span class="text-xs text-slate-400 font-bold">${item.votes || 0} Votes</span>`;
                 }
 
                 const cardHTML = `
@@ -567,7 +565,7 @@
         }
 
         // ==========================================
-        // 5. ANTI-SPAM VOTING (1 TAP = +10 PTS) & COMMENTARY
+        // 5. ANTI-SPAM VOTING (1 TAP = AUTO 10) & COMMENTARY
         // ==========================================
         function castLiveVoteDirect(id) {
             if(currentPhase !== 2) return;
@@ -601,7 +599,7 @@
             } else {
                 voteBtn.disabled = false;
                 voteBtn.className = "px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold uppercase transition-all";
-                voteBtn.innerHTML = `<i class="fa-solid fa-heart mr-1"></i> Vote (+10)`;
+                voteBtn.innerHTML = `<i class="fa-solid fa-heart mr-1"></i> Vote`;
             }
         }
 
@@ -679,7 +677,7 @@
                         <span class="text-xs font-black text-gold-400 tracking-wider">${badges[index]}</span>
                         <h4 class="text-lg font-bold text-slate-100 uppercase mt-2 mb-1">${item.title}</h4>
                         <p class="text-xs text-emerald-400 font-bold uppercase mb-3">${item.group}</p>
-                        <span class="px-4 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold">${item.votes || 0} Points</span>
+                        <span class="px-4 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold">${item.votes || 0} Votes</span>
                     </div>
                 `;
             });
